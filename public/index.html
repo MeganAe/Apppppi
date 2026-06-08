@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API — Free AI REST API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:  #1a1a1a;
+      --yellow: #ffcc00;
+      --red:    #e63b2e;
+      --blue:   #0055ff;
+      --bg:     #f5f0e8;
+      --white:  #ffffff;
+      --border: 3px solid var(--black);
+      --shadow: 5px 5px 0 var(--black);
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--black); font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.5; overflow-x: hidden; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--black);
+      color: var(--yellow);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      border-bottom: var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      color: var(--yellow);
+    }
+
+    /* Desktop nav */
+    nav.desktop-nav a {
+      color: var(--bg);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-left: 2rem;
+      transition: color .15s;
+    }
+    nav.desktop-nav a:hover { color: var(--yellow); }
+
+    /* Hamburger button */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 28px;
+      height: 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      z-index: 300;
+    }
+    .hamburger span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background: var(--yellow);
+      transition: transform .3s, opacity .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(8.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-8.5px) rotate(-45deg); }
+
+    /* Mobile menu overlay */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--black);
+      z-index: 150;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity .3s, transform .3s;
+    }
+    .mobile-menu.open {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .mobile-menu a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 2rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      border-bottom: 4px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .mobile-menu a:hover { color: var(--yellow); border-color: var(--yellow); }
+
+    /* ── RESPONSIVE BREAKPOINTS ── */
+    @media (max-width: 768px) {
+      nav.desktop-nav { display: none; }
+      .hamburger { display: flex; }
+    }
+    @media (min-width: 769px) {
+      .mobile-menu { display: none !important; }
+    }
+
+    /* ── HERO ── */
+    .hero { background: var(--black); color: var(--white); padding: 5rem 2rem 4rem; position: relative; overflow: hidden; }
+    .hero::before { content: 'API'; position: absolute; right: -2rem; top: -1rem; font-size: 20rem; font-weight: 900; color: rgba(255,204,0,0.05); line-height: 1; pointer-events: none; user-select: none; }
+    .hero-badge { display: inline-block; background: var(--yellow); color: var(--black); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; padding: 4px 12px; border: 2px solid var(--black); margin-bottom: 1.5rem; }
+    .hero h1 { font-size: clamp(2.5rem, 8vw, 7rem); font-weight: 900; line-height: 0.9; text-transform: uppercase; letter-spacing: -3px; max-width: 900px; }
+    .hero h1 span { color: var(--yellow); }
+    .hero p { margin-top: 2rem; font-size: 1.1rem; color: rgba(255,255,255,0.7); max-width: 520px; }
+    .hero-actions { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    @media (max-width: 480px) {
+      .hero { padding: 3rem 1.2rem 2.5rem; }
+      .hero::before { font-size: 10rem; }
+      .hero-actions .btn { width: 100%; text-align: center; }
+    }
+
+    /* ── BUTTONS ── */
+    .btn { display: inline-block; padding: 14px 28px; font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border: 2px solid var(--black); cursor: pointer; transition: background .15s, color .15s, transform .1s; box-shadow: var(--shadow); }
+    .btn:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--black); }
+    .btn-yellow { background: var(--yellow); color: var(--black); }
+    .btn-yellow:hover { background: var(--black); color: var(--yellow); }
+    .btn-outline { background: transparent; color: var(--white); border-color: var(--white); }
+    .btn-outline:hover { background: var(--white); color: var(--black); }
+    .btn-red { background: var(--red); color: var(--white); }
+    .btn-red:hover { background: var(--black); color: var(--red); }
+
+    /* ── SECTIONS ── */
+    section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+    @media (max-width: 480px) { section { padding: 2.5rem 1.2rem; } }
+    .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--red); border-left: 4px solid var(--red); padding-left: 10px; margin-bottom: 1rem; }
+    h2 { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: -2px; margin-bottom: 2.5rem; line-height: 1; }
+
+    /* ── ENDPOINT CARDS ── */
+    .endpoints { display: grid; gap: 1.5rem; }
+    .endpoint-card { background: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 1.5rem; }
+    @media (max-width: 480px) { .endpoint-card { padding: 1rem; } }
+    .endpoint-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .method { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border: 2px solid var(--black); text-transform: uppercase; }
+    .method.get { background: var(--yellow); }
+    .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; word-break: break-all; }
+    .endpoint-desc { color: #555; margin-bottom: 1rem; font-size: 0.9rem; }
+
+    /* ── PARAMS TABLE ── */
+    .table-wrapper { overflow-x: auto; }
+    .params-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
+    .params-table th { background: var(--black); color: var(--yellow); padding: 8px 12px; text-align: left; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+    .params-table td { padding: 8px 12px; border-bottom: 2px solid var(--black); border-left: 2px solid var(--black); }
+    .params-table tr td:last-child { border-right: 2px solid var(--black); }
+    .params-table tr:first-child td { border-top: 2px solid var(--black); }
+    .params-table tr:nth-child(even) td { background: rgba(0,0,0,0.03); }
+    .param-name { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--blue); }
+    .param-req { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--red); }
+    .param-opt { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #999; }
+
+    /* ── CODE BLOCK ── */
+    .code-block { background: var(--black); color: #e8e8e8; padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.7; border: var(--border); margin-top: 1rem; position: relative; overflow-x: auto; }
+    @media (max-width: 480px) { .code-block { font-size: 0.75rem; padding: 1rem 1rem 1rem 1rem; } }
+    .code-block .kw  { color: var(--yellow); }
+    .code-block .str { color: #a8d8a8; }
+    .code-block .cmt { color: #666; font-style: italic; }
+    .code-block .key { color: #88c0d0; }
+    .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--yellow); color: var(--black); border: 2px solid var(--black); font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; cursor: pointer; }
+    .copy-btn:hover { background: var(--white); }
+    .copy-btn.copied { background: #4caf50; color: white; }
+
+    /* ── PLAYGROUND ── */
+    .playground { background: var(--black); padding: 4rem 2rem; }
+    @media (max-width: 480px) { .playground { padding: 2.5rem 1.2rem; } }
+    .playground-inner { max-width: 1100px; margin: 0 auto; }
+    .playground h2 { color: var(--yellow); }
+    .playground .section-label { color: var(--yellow); border-color: var(--yellow); }
+    .pg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+    @media (max-width: 700px) { .pg-grid { grid-template-columns: 1fr; } }
+    .pg-input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .pg-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.5); }
+    .pg-input, .pg-select { background: transparent; border: 0; border-bottom: 3px solid rgba(255,255,255,0.3); color: var(--white); font-family: 'Space Grotesk', sans-serif; font-size: 1rem; padding: 10px 0; outline: none; transition: border-color .2s; width: 100%; }
+    .pg-input:focus, .pg-select:focus { border-bottom-color: var(--yellow); }
+    .pg-select option { background: var(--black); }
+    .pg-url-preview { grid-column: 1 / -1; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--yellow); word-break: break-all; }
+    .pg-result { grid-column: 1 / -1; background: #0d0d0d; border: 3px solid rgba(255,204,0,0.3); padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #ccc; min-height: 80px; white-space: pre-wrap; word-break: break-word; transition: border-color .3s; }
+    .pg-result.loading { border-color: var(--blue); color: var(--blue); }
+    .pg-result.success { border-color: #4caf50; }
+    .pg-result.error   { border-color: var(--red); color: var(--red); }
+    .pg-actions { grid-column: 1 / -1; display: flex; gap: 1rem; flex-wrap: wrap; }
+    @media (max-width: 480px) { .pg-actions .btn { flex: 1; text-align: center; } }
+
+    /* ── MODELS GRID ── */
+    .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+    @media (max-width: 480px) { .models-grid { grid-template-columns: 1fr 1fr; } }
+    .model-card { background: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .model-name { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.9rem; }
+    .model-free { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #fff; background: #4caf50; padding: 2px 8px; display: inline-block; width: fit-content; }
+
+    /* ── STRIPE ── */
+    .stripe { height: 8px; background: repeating-linear-gradient(90deg, var(--yellow) 0, var(--yellow) 20px, var(--black) 20px, var(--black) 40px); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--black); color: rgba(255,255,255,0.4); padding: 2rem; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    @media (max-width: 480px) { footer { flex-direction: column; align-items: center; text-align: center; } }
+    footer span { color: var(--yellow); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .hero h1, .hero p, .hero-actions { animation: fadeUp .5s ease both; }
+    .hero p { animation-delay: .1s; }
+    .hero-actions { animation-delay: .2s; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">API</div>
+
+  <!-- Desktop nav -->
+  <nav class="desktop-nav">
+    <a href="#endpoints">Endpoints</a>
+    <a href="#models">Modèles</a>
+    <a href="#playground">Playground</a>
+  </nav>
+
+  <!-- Hamburger (mobile) -->
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- Mobile menu -->
+<nav class="mobile-menu" id="mobile-menu">
+  <a href="#endpoints" onclick="closeMenu()">Endpoints</a>
+  <a href="#models"    onclick="closeMenu()">Modèles</a>
+  <a href="#playground" onclick="closeMenu()">Playground</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"> 100% Gratuit — Aucune clé API requise</div>
+  <h1>Free AI<br /><span>Rest API</span></h1>
+  <p>Interrogez des modèles IA via une simple requête GET. Aucune authentification nécessaire. Prêt à l'emploi.</p>
+  <div class="hero-actions">
+    <a href="#playground" class="btn btn-yellow">Tester maintenant</a>
+    <a href="#endpoints"  class="btn btn-outline">Voir les endpoints</a>
+  </div>
+</div>
+
+<div class="stripe"></div>
+
+<!-- ENDPOINTS -->
+<section id="endpoints">
+  <div class="section-label">Documentation</div>
+  <h2>Endpoints</h2>
+  <div class="endpoints">
+
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/ai</span>
+      </div>
+      <p class="endpoint-desc">Envoyer un prompt à un modèle IA et recevoir une réponse. Le paramètre <code>model</code> est optionnel.</p>
+      <div class="table-wrapper">
+        <table class="params-table">
+          <thead><tr><th>Paramètre</th><th>Type</th><th>Status</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">prompt</span></td><td>string</td><td><span class="param-req">Requis</span></td><td>Le message à envoyer</td></tr>
+            <tr><td><span class="param-name">model</span></td><td>string</td><td><span class="param-opt">Optionnel</span></td><td>Modèle à utiliser (défaut: <code>v3</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+        <span class="cmt"># Requête simple</span><br/>
+        GET <span class="str">/api/ai?prompt=Bonjour, comment vas-tu?</span><br/><br/>
+        <span class="cmt"># Avec modèle spécifique</span><br/>
+        GET <span class="str">/api/ai?prompt=Explique l'IA&amp;model=gemini</span><br/><br/>
+        <span class="cmt"># Réponse</span><br/>
+        {<br/>
+        &nbsp;&nbsp;<span class="key">"success"</span>: <span class="kw">true</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"model"</span>: <span class="str">"v3"</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"prompt"</span>: <span class="str">"Bonjour, comment vas-tu?"</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"reply"</span>: <span class="str">"Bonjour ! Je vais bien..."</span><br/>
+        }
+      </div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/models</span>
+      </div>
+      <p class="endpoint-desc">Retourne la liste de tous les modèles disponibles.</p>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+        GET <span class="str">/api/models</span><br/><br/>
+        {<br/>
+        &nbsp;&nbsp;<span class="key">"success"</span>: <span class="kw">true</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"models"</span>: [<span class="str">"v3"</span>, <span class="str">"turbo"</span>, <span class="str">"gemini"</span>, <span class="str">"..."</span>],<br/>
+        &nbsp;&nbsp;<span class="key">"default"</span>: <span class="str">"v3"</span><br/>
+        }
+      </div>
+    </div>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/health</span>
+      </div>
+      <p class="endpoint-desc">Vérifier si l'API est en ligne.</p>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+        GET <span class="str">/api/health</span><br/><br/>
+        {<br/>
+        &nbsp;&nbsp;<span class="key">"success"</span>: <span class="kw">true</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"status"</span>: <span class="str">"online"</span>,<br/>
+        &nbsp;&nbsp;<span class="key">"message"</span>: <span class="str">"Soli Deo Gloria 🙏"</span><br/>
+        }
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="stripe"></div>
+
+<!-- MODELS -->
+<section id="models">
+  <div class="section-label">Disponibles gratuitement</div>
+  <h2>Modèles</h2>
+  <div class="models-grid">
+    <div class="model-card"><div class="model-name">v3</div><span class="model-free">Gratuit</span><small>Modèle par défaut</small></div>
+    <div class="model-card"><div class="model-name">v3-32k</div><span class="model-free">Gratuit</span><small>Contexte étendu</small></div>
+    <div class="model-card"><div class="model-name">turbo</div><span class="model-free">Gratuit</span><small>Rapide</small></div>
+    <div class="model-card"><div class="model-name">turbo-16k</div><span class="model-free">Gratuit</span><small>Turbo + contexte</small></div>
+    <div class="model-card"><div class="model-name">gemini</div><span class="model-free">Gratuit</span><small>Google Gemini</small></div>
+    <div class="model-card"><div class="model-name">llama3-70b</div><span class="model-free">Gratuit</span><small>Meta Llama 3</small></div>
+    <div class="model-card"><div class="model-name">llama3-8b</div><span class="model-free">Gratuit</span><small>Meta Llama 3 Lite</small></div>
+    <div class="model-card"><div class="model-name">mixtral-8x7b</div><span class="model-free">Gratuit</span><small>Mistral AI</small></div>
+    <div class="model-card"><div class="model-name">gemma-7b</div><span class="model-free">Gratuit</span><small>Google Gemma</small></div>
+    <div class="model-card"><div class="model-name">gemma2-9b</div><span class="model-free">Gratuit</span><small>Google Gemma 2</small></div>
+  </div>
+</section>
+
+<div class="stripe"></div>
+
+<!-- PLAYGROUND -->
+<div class="playground" id="playground">
+  <div class="playground-inner">
+    <div class="section-label">Interactif</div>
+    <h2>Playground</h2>
+    <div class="pg-grid">
+      <div class="pg-input-group">
+        <label class="pg-label">Prompt</label>
+        <input id="pg-prompt" class="pg-input" type="text" placeholder="Pose ta question ici..." oninput="updateUrl()" />
+      </div>
+      <div class="pg-input-group">
+        <label class="pg-label">Modèle</label>
+        <select id="pg-model" class="pg-select" onchange="updateUrl()">
+          <option value="v3">v3 (défaut)</option>
+          <option value="v3-32k">v3-32k</option>
+          <option value="turbo">turbo</option>
+          <option value="turbo-16k">turbo-16k</option>
+          <option value="gemini">gemini</option>
+          <option value="llama3-70b">llama3-70b</option>
+          <option value="llama3-8b">llama3-8b</option>
+          <option value="mixtral-8x7b">mixtral-8x7b</option>
+          <option value="gemma-7b">gemma-7b</option>
+          <option value="gemma2-9b">gemma2-9b</option>
+        </select>
+      </div>
+      <div class="pg-url-preview" id="pg-url">GET /api/ai?prompt=...</div>
+      <div class="pg-actions">
+        <button class="btn btn-yellow" onclick="runQuery()">Envoyer</button>
+        <button class="btn btn-red"    onclick="clearResult()"> Effacer</button>
+      </div>
+      <div class="pg-result" id="pg-result">// La réponse apparaîtra ici...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2025 <span>Metoushela API</span> — All rights reserved</div>
+  <div><span>Soli Deo Gloria </span></div>
+</footer>
+
+<script>
+  // ── HAMBURGER ──
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  function closeMenu() {
+    mobileMenu.classList.remove('open');
+    hamburger.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close on resize to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 769) closeMenu();
+  });
+
+  // ── PLAYGROUND ──
+  function updateUrl() {
+    const prompt = document.getElementById('pg-prompt').value;
+    const model  = document.getElementById('pg-model').value;
+    document.getElementById('pg-url').textContent = prompt
+      ? `GET /api/ai?prompt=${encodeURIComponent(prompt)}&model=${model}`
+      : 'GET /api/ai?prompt=...';
+  }
+
+  async function runQuery() {
+    const prompt = document.getElementById('pg-prompt').value.trim();
+    const model  = document.getElementById('pg-model').value;
+    const result = document.getElementById('pg-result');
+    if (!prompt) {
+      result.textContent = '⚠ Veuillez entrer un prompt.';
+      result.className = 'pg-result error';
+      return;
+    }
+    result.textContent = ' Envoi de la requête...';
+    result.className = 'pg-result loading';
+    try {
+      const res  = await fetch(`/api/ai?prompt=${encodeURIComponent(prompt)}&model=${model}`);
+      const data = await res.json();
+      result.textContent = JSON.stringify(data, null, 2);
+      result.className = data.success ? 'pg-result success' : 'pg-result error';
+    } catch (err) {
+      result.textContent = `// Erreur réseau: ${err.message}`;
+      result.className = 'pg-result error';
+    }
+  }
+
+  function clearResult() {
+    const r = document.getElementById('pg-result');
+    r.textContent = '// La réponse apparaîtra ici...';
+    r.className = 'pg-result';
+  }
+
+  function copyCode(btn) {
+    const text = btn.parentElement.innerText.replace('Copier','').replace('Copié !','').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('pg-prompt').addEventListener('keydown', e => {
+      if (e.key === 'Enter') runQuery();
+    });
+  });
+</script>
+</body>
+</html>
