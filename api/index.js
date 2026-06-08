@@ -38,12 +38,18 @@ app.get("/api/ai", async (req, res) => {
   }
 
   try {
-    const response = await _client.question({ model, content: prompt });
+    const response = await _client.chat.completions.create({
+      model: model,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const reply = response?.reply || response?.choices?.[0]?.message?.content || "";
+
     return res.json({
       success: true,
       model,
       prompt,
-      reply: response.reply,
+      reply,
     });
   } catch (err) {
     console.error("AI error:", err);
